@@ -26,11 +26,11 @@ extern int socketListen(Socket *ps, int backlog);
 
 extern int socketSetTTL(Socket *ps, int ttl);
 
+extern int socketSetTimeout(Socket *ps, int seconds);
+
 extern int socketSendTo(Socket *ps, const char *server, int port, const char *data, int dataLen);
 
-
 extern int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen);
-
 
 extern int socketRelease(Socket *ps);
 

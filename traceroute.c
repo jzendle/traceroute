@@ -22,27 +22,33 @@ int perform_traceroute(const char * address) {
 
     if (socketCreate(&icmp, 0, 0, RAW) != EXIT_SUCCESS) {
         errv(1, "unable to create raw socket for %s\n", address);
+        return EXIT_FAILURE;
     }
 
     if (socketCreate(&udp, 0, 0, DATAGRAM) != EXIT_SUCCESS) {
         errv(1, "unable to create udp socket for %s\n", address);
+        return EXIT_FAILURE;
     }
 
     socketSetTTL(udp, 1);
     
-    if ( socketSendTo(udp,address, 50000, msg,strlen(msg)) != EXIT_SUCCESS ) {
+    socketSetTimeout(icmp,2);
+    
+    
+    if ( socketSendTo(udp,address, 33000, msg,strlen(msg)) != EXIT_SUCCESS ) {
         errv(0, "can't send to host %s\n", address);
+        return EXIT_FAILURE;
     }
     
     int len = sizeof packet;
     socketRecvFrom(icmp, 0,0, packet, &len);
     
-    infov("received %d bytes", len);
+    infov("received %d bytes\n", len);
     
     
 
     socketRelease(icmp);
     socketRelease(udp);
 
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }

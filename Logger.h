@@ -8,6 +8,8 @@
 #ifndef LOGGER_H
 #define	LOGGER_H
 
+#define PERROR errv(0,"%s %s %s:%d\n", __FUNCTION__, strerror(errno), __FILE__, __LINE__)
+
 
 void info(const char *msg);
 

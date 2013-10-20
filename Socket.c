@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/time.h>
 
 
 extern int inet_aton(const char *__cp, struct in_addr *__inp);
@@ -47,13 +48,13 @@ int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
     fd = socket(PF_INET, prot, protocol == RAW ? IPPROTO_ICMP : 0);
 
     if (fd == -1) {
-        perror("socketCreate: socket");
+        PERROR;
         return EXIT_FAILURE;
     }
 
     Socket *newSocket = calloc(1, sizeof (Socket));
     if (newSocket == NULL) {
-        perror("socketCreate: calloc");
+        PERROR;
         return EXIT_FAILURE;
     }
 
@@ -70,7 +71,7 @@ int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
         adr_inet.sin_addr.s_addr = ntohl(INADDR_ANY);
     else {
         if (inet_aton(host, &adr_inet.sin_addr) == 0) {
-            perror("socketCreate: inet_aton");
+            PERROR;
             return EXIT_FAILURE;
         }
 
@@ -80,7 +81,7 @@ int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
     if (bind(fd,
             (struct sockaddr *) &adr_inet,
             adr_len) == -1) {
-        perror("socketCreate: bind");
+        PERROR;
         return EXIT_FAILURE;
     }
 
@@ -94,8 +95,20 @@ int socketListen(Socket *ps, int backlog) {
 
 int socketSetTTL(Socket *ps, int ttl) {
     if (setsockopt(ps->socket, IPPROTO_IP, IP_TTL, &ttl, sizeof (int)) != EXIT_SUCCESS) {
-        perror("socketSetTTL: setsockopt");
-        errv(0, "%s:%d\n",__FILE__,__LINE__);
+        PERROR;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
+int socketSetTimeout(Socket *ps, int seconds) {
+    struct timeval tv;
+
+    tv.tv_sec = seconds;
+    tv.tv_usec = 0;
+
+    if (setsockopt(ps->socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &tv, sizeof (struct timeval)) != EXIT_SUCCESS) {
+        PERROR;
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -109,35 +122,32 @@ int socketSendTo(Socket *ps, const char *server, int port, const char *data, int
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = ntohs(port);
     if (inet_aton(server, &serv_addr.sin_addr) == 0) {
-        errv(0, "inet_aton: %s, %s:%n\n" , strerror(errno), __FILE__, __LINE__);
+        PERROR;
         return EXIT_FAILURE;
     }
 
     if (sendto(ps->socket, data, dataLen, 0, (const struct sockaddr *) &serv_addr, sizeof (serv_addr)) != dataLen) {
-        perror("socketSendTo: sendto");
-        errv(0, "can't send to %s:%d\n", server, port);
+        PERROR;
         return EXIT_FAILURE;
 
     }
     strerror(errno);
-    
+
     ps->bytesOut += dataLen;
 
     return EXIT_SUCCESS;
 
 }
 
-
-
 int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen) {
-   
+
     struct sockaddr_in from_addr;
     int numRead;
     memset(&from_addr, 0, sizeof from_addr);
 
     socklen_t recvLen = sizeof from_addr;
     if ((numRead = recvfrom(ps->socket, data, *dataLen, 0, (struct sockaddr *) &from_addr, &recvLen)) < 0) {
-        errv(0, "%s %s:%s:%d\n", strerror(errno), __FUNCTION__,__FILE__,__LINE__);
+        PERROR;
         return EXIT_FAILURE;
 
     }
@@ -149,12 +159,11 @@ int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen
 }
 
 int socketRelease(Socket *ps) {
-    if (close(ps->socket) == 0) {
-        perror("close");
-        return -1;
+    if (close(ps->socket) != 0) {
+        PERROR;
     }
     free(ps);
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
