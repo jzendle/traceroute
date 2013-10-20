@@ -1,5 +1,5 @@
 TARGET=traceroute
-OBJECT=main.o traceroute.o
+OBJECT=main.o traceroute.o Socket.o Logger.o Timer.o
 
 CFLAGS=-O0 -ggdb -Wall -ansi
 LIBS=
