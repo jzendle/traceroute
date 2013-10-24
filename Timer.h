@@ -2,7 +2,7 @@
  * File:   timer.h
  * Author: jzendle
  *
- * Created on September 30, 2013, 9:26 PM
+ * Created on October 12, 2013, 9:26 PM
  */
 
 #ifndef TIMER_H
