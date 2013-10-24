@@ -136,22 +136,18 @@ int socketSendTo(Socket *ps, const char *server, int port, const char *data, int
                     server);
             return EXIT_FAILURE;
 
-        }
-        else {
-            memcpy( &serv_addr.sin_addr,hp->h_addr_list[0], 4);
+        } else {
+            memcpy(&serv_addr.sin_addr, hp->h_addr_list[0], 4);
         }
     }
-
-
-
 
     if (sendto(ps->socket, data, dataLen, 0, (const struct sockaddr *) &serv_addr, sizeof (serv_addr)) != dataLen) {
         PERROR;
         return EXIT_FAILURE;
 
     }
-    strerror(errno);
 
+    /* update internal counter */
     ps->bytesOut += dataLen;
 
     return EXIT_SUCCESS;
@@ -166,13 +162,15 @@ int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen
 
     socklen_t recvLen = sizeof from_addr;
     if ((numRead = recvfrom(ps->socket, data, *dataLen, 0, (struct sockaddr *) &from_addr, &recvLen)) < 0) {
-        /* PERROR; */
+        if (errno != 11) /* Resource temporarily unavailable - timeout */
+            PERROR;
         return EXIT_FAILURE;
 
     }
 
     strcpy(server, inet_ntoa(from_addr.sin_addr));
     *dataLen = numRead;
+    /* update internal counter */
     ps->bytesIn += numRead;
 
     return EXIT_SUCCESS;

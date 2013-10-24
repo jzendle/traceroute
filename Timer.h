@@ -8,16 +8,10 @@
 #ifndef TIMER_H
 #define	TIMER_H
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
+#include <sys/time.h>
 
-    char *time_to_string(char *buf, int len);
-
-
-#ifdef	__cplusplus
-}
-#endif
-
+    char *timeToString(char *buf, int len);
+    float timeDiffMillis(struct timeval *after, struct timeval *before);
+ 
 #endif	/* TIMER_H */
 

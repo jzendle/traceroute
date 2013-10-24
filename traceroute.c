@@ -3,11 +3,14 @@
 #include "Socket.h"
 #include "Logger.h"
 #include "Icmp.h"
+#include "Timer.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-int socketRecvNtimesFrom(Socket *ps, int count);
+/* forward decl */
+int socketSendRecvNTimesFrom(Socket *send, Socket *recv,
+        int nTimes, const char *srvAddress, int srvPort, const char *msg);
 
 /*
  *  Perform a Traceroute to Supplied Address
@@ -16,6 +19,7 @@ int socketRecvNtimesFrom(Socket *ps, int count);
 int perform_traceroute(const char * address) {
     Socket *udp;
     Socket *icmp;
+    int unreachablePort = 65433;
     const char *msg = "message in a bottle";
 
     printf("tracing route to '%s'\n", address);
@@ -41,13 +45,7 @@ int perform_traceroute(const char * address) {
 
         printf("%d ", ttl);
 
-
-        if (socketSendTo(udp, address, 33000, msg, strlen(msg)) != EXIT_SUCCESS) {
-            errv(0, "can't send to host %s\n", address);
-            return EXIT_FAILURE;
-        }
-
-        msgType = socketRecvNtimesFrom(icmp, 3);
+        msgType = socketSendRecvNTimesFrom(udp, icmp, 3, address, unreachablePort, msg);
 
         /* flush stdout */
         printf(" %d \n", msgType);
@@ -58,26 +56,45 @@ int perform_traceroute(const char * address) {
     return EXIT_SUCCESS;
 }
 
-int socketRecvNtimesFrom(Socket *ps,int count) {
+int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int count, const char *srvAddress, int srvPort, const char *msg) {
 
     char packet[4096];
     char server[1024];
-    
+    int printedServer = 0;
+    int icmpMsgType = -1;
+
 
     int i;
     for (i = 0; i < count; i++) {
+        struct timeval before;
+        struct timeval after;
+
+        gettimeofday(&before, 0);
+
+        if (socketSendTo(send, srvAddress, srvPort, msg, strlen(msg)) != EXIT_SUCCESS) {
+            errv(0, "can't send to host %s\n", srvAddress);
+            return EXIT_FAILURE;
+        }
 
         int len = sizeof packet;
-        if (socketRecvFrom(ps, server, 0, packet, &len) == EXIT_SUCCESS) {
-            printf(" (%s) ", server);
-            return icmpGetTypeFromIpFrame(packet);
+        if (socketRecvFrom(recv, server, 0, packet, &len) == EXIT_SUCCESS) {
+            gettimeofday(&after, 0);
+            if (!printedServer) {
+                printf(" %s ", server);
+                printedServer = !printedServer;
+            }
+            printf (" %4.3fms ", timeDiffMillis(&after, &before));
+            icmpMsgType = icmpGetTypeFromIpFrame(packet);
         } else {
             printf(" * ");
             fflush(stdout);
         }
     }
+    
+       fflush(stdout);
 
-    return EXIT_FAILURE;
+    return (icmpMsgType == -1 ? EXIT_FAILURE : icmpMsgType);
+
 }
 
 
