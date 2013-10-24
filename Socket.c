@@ -3,6 +3,7 @@
 #include "Logger.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/time.h>
+
+extern const char *hstrerror(int err);
 
 
 extern int inet_aton(const char *__cp, struct in_addr *__inp);
@@ -121,10 +124,26 @@ int socketSendTo(Socket *ps, const char *server, int port, const char *data, int
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = ntohs(port);
+
     if (inet_aton(server, &serv_addr.sin_addr) == 0) {
-        PERROR;
-        return EXIT_FAILURE;
+        struct hostent *hp;
+        hp = gethostbyname(server);
+        if (!hp) {
+            /* Report lookup failure */
+            fprintf(stderr,
+                    "%s: host '%s'\n",
+                    hstrerror(h_errno),
+                    server);
+            return EXIT_FAILURE;
+
+        }
+        else {
+            memcpy( &serv_addr.sin_addr,hp->h_addr_list[0], 4);
+        }
     }
+
+
+
 
     if (sendto(ps->socket, data, dataLen, 0, (const struct sockaddr *) &serv_addr, sizeof (serv_addr)) != dataLen) {
         PERROR;
@@ -147,10 +166,12 @@ int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen
 
     socklen_t recvLen = sizeof from_addr;
     if ((numRead = recvfrom(ps->socket, data, *dataLen, 0, (struct sockaddr *) &from_addr, &recvLen)) < 0) {
-        PERROR;
+        /* PERROR; */
         return EXIT_FAILURE;
 
     }
+
+    strcpy(server, inet_ntoa(from_addr.sin_addr));
     *dataLen = numRead;
     ps->bytesIn += numRead;
 

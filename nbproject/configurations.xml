@@ -2,13 +2,12 @@
 <configurationDescriptor version="90">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
+      <in>Icmp.c</in>
       <in>Logger.c</in>
       <in>Socket.c</in>
-      <in>Socket.h</in>
       <in>Timer.c</in>
       <in>main.c</in>
       <in>traceroute.c</in>
-      <in>traceroute.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -36,25 +35,23 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>traceroute</executablePath>
           <cTool>
             <standard>2</standard>
           </cTool>
         </makeTool>
       </makefileType>
+      <item path="Icmp.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="Logger.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="Socket.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="Socket.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Timer.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="traceroute.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="traceroute.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

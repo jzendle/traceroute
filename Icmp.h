@@ -8,6 +8,4 @@
 
 extern int icmpGetTypeFromIpFrame(char *ipFrame);
 
-
-
 #endif
