@@ -110,8 +110,8 @@ int socketSetTTL(Socket *ps, int ttl) {
 
 
 int socketSetRecordRoute(Socket *ps) {
-  static const int numRoutes = 9;
-  char routeSpace[3+4*numRoutes+1];
+  #define NUM_ROUTES 9;
+  char routeSpace[3+4*NUM_ROUTES+1];
   int ret = EXIT_SUCCESS;
 
   memset(routeSpace, 0, sizeof(routeSpace));
