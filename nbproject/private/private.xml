@@ -10,7 +10,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/home/jzendle/NetBeansProjects/traceroute/Timer.c</file>
+            <file>file:/home/jzendle/NetBeansProjects/traceroute/Timer.h</file>
             <file>file:/home/jzendle/NetBeansProjects/traceroute/traceroute.c</file>
+            <file>file:/home/jzendle/NetBeansProjects/traceroute/Socket.c</file>
+            <file>file:/home/jzendle/NetBeansProjects/traceroute/Logger.h</file>
             <file>file:/home/jzendle/NetBeansProjects/traceroute/Makefile</file>
         </group>
     </open-files>

@@ -31,7 +31,7 @@ int main()
   rspace[1+IPOPT_OLEN] = sizeof(rspace)-1;
   rspace[1+IPOPT_OFFSET] = IPOPT_MINOFF;
   optlen=40;
-  if (setsockopt(s, IPPROTO_IP, IP_OPTIONS, rspace, sizeof(rspace))<0) {
+b  if (setsockopt(s, IPPROTO_IP, IP_OPTIONS, rspace, sizeof(rspace))<0) {
       perror("record route\n");
       exit(2);
     }

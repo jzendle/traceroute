@@ -28,6 +28,10 @@ extern int socketSetTTL(Socket *ps, int ttl);
 
 extern int socketSetTimeout(Socket *ps, int seconds);
 
+extern int socketSetRecordRoute(Socket *ps);
+
+extern int socketGetRecordRoute(Socket *ps, char *options, int *pLen);
+
 extern int socketSendTo(Socket *ps, const char *server, int port, const char *data, int dataLen);
 
 /* null host implies INET_ADDR_ANY for a server address */
