@@ -8,6 +8,7 @@
 #ifndef SOCKET_H
 #define	SOCKET_H
 
+#include <netinet/in.h>
 
 typedef struct SocketStruct Socket;
 typedef Socket *pSocket;
@@ -32,7 +33,7 @@ extern int socketSetRecordRoute(Socket *ps);
 
 extern int socketGetRecordRoute(Socket *ps, char *options, int *pLen);
 
-extern int socketSendTo(Socket *ps, const char *server, int port, const char *data, int dataLen);
+extern int socketSendTo(Socket *ps, const struct sockaddr_in *sendTo, const char *data, int dataLen);
 
 /* null host implies INET_ADDR_ANY for a server address */
 extern int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen);

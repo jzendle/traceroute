@@ -152,31 +152,10 @@ int socketSetTimeout(Socket *ps, int seconds) {
   return EXIT_SUCCESS;
 }
 
-int socketSendTo(Socket *ps, const char *server, int port, const char *data, int dataLen) {
-  struct sockaddr_in serv_addr;
-  memset(&serv_addr, 0, sizeof serv_addr);
+int socketSendTo(Socket *ps, const struct sockaddr_in *sendTo, const char *data, int dataLen) {
 
-
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_port = ntohs(port);
-
-  if (inet_aton(server, &serv_addr.sin_addr) == 0) {
-    struct hostent *hp;
-    hp = gethostbyname(server);
-    if (!hp) {
-      /* Report lookup failure */
-      fprintf(stderr,
-	      "%s: host '%s'\n",
-	      hstrerror(h_errno),
-	      server);
-      return EXIT_FAILURE;
-
-    } else {
-      memcpy(&serv_addr.sin_addr, hp->h_addr_list[0], 4);
-    }
-  }
-
-  if (sendto(ps->socket, data, dataLen, 0, (const struct sockaddr *) &serv_addr, sizeof (serv_addr)) != dataLen) {
+  if (sendto(ps->socket, data, dataLen, 0, (const struct sockaddr *) sendTo, 
+	     sizeof (struct sockaddr_in)) != dataLen) {
     PERROR;
     return EXIT_FAILURE;
 
