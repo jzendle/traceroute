@@ -44,18 +44,16 @@ extern int icmpGetTypeFromIpFrame(char *ipFrame) {
   if ( type == ICMP_DEST_UNREACH && code == ICMP_PORT_UNREACH ) {
 
     /* according to Stevens the original UDP header should be included in the ICMP data */
-
-    /* use char * to allow nice bytewise pointer arithmetic - been a long time */
-    char *tmp = (char *) icmp;
+    /* lets find it */
 
     /* offending ip header should follow icmp header */
-    struct iphdr *echoIphdr =  (struct iphdr *) (tmp + sizeof (struct icmphdr));
+    /* cast icmp to char * for bytewise pointer math  */
+    struct iphdr *echoIphdr =  (struct iphdr *) ((char *)icmp + sizeof (struct icmphdr));
 
-    /* once again, use char * for nice pointer math - suppose a cast would work too */
-    tmp = (char *) echoIphdr;
 
     /* offending udp message should follow this ip header */
-    struct udphdr *badUdp = ( struct udphdr * ) (tmp + echoIphdr->ihl * 4);
+    /* cast echoIpHder to char * for bytewise pointer math */
+    struct udphdr *badUdp = ( struct udphdr * ) ((char *)echoIphdr + echoIphdr->ihl * 4);
   
     printf ("dest port %d\n" , ntohs(badUdp->dest));
     printf ("source port %d\n" , ntohs(badUdp->source));
