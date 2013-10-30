@@ -31,11 +31,9 @@ extern int icmpGetTypeFromIpFrame(char *ipFrame) {
     return EXIT_FAILURE;
   }
 
-  /* find offset to first byte of icmp which happens to be the msg type */
+  /* map to the icmp header  */
   icmp = (struct icmphdr *)&ipFrame[iphdr->ihl * 4];
 
-  /* use char * to allow nice bytewise pointer arithmetic - been a long time */
-  char *tmp = (char *) icmp;
   int type = icmp->type;
   int code = icmp->code;
 
@@ -44,10 +42,18 @@ extern int icmpGetTypeFromIpFrame(char *ipFrame) {
   /* lets find the offending port (should be our port) if we have received 'port unreachable' */
   
   if ( type == ICMP_DEST_UNREACH && code == ICMP_PORT_UNREACH ) {
+
+    /* according to Stevens the original UDP header should be included in the ICMP data */
+
+    /* use char * to allow nice bytewise pointer arithmetic - been a long time */
+    char *tmp = (char *) icmp;
+
     /* offending ip header should follow icmp header */
     struct iphdr *echoIphdr =  (struct iphdr *) (tmp + sizeof (struct icmphdr));
-    /* once again, use char * for nice pointer math */
+
+    /* once again, use char * for nice pointer math - suppose a cast would work too */
     tmp = (char *) echoIphdr;
+
     /* offending udp message should follow this ip header */
     struct udphdr *badUdp = ( struct udphdr * ) (tmp + echoIphdr->ihl * 4);
   
