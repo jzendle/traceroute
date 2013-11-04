@@ -78,6 +78,9 @@ int perform_traceroute(const char * address) {
 
 	   /* flush stdout */
 	   printf("\n");
+ 	if ( msgType == EXIT_FAILURE ) {
+		log_errv(1, "error in socketSendRecvNTimesFrom. Exiting.\n");
+	}
 
 	 }
 	 socket_Release(icmp);
