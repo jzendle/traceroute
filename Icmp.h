@@ -6,6 +6,6 @@
  */
 #include <netinet/ip_icmp.h> /* include for msg type definitions */
 
-extern int icmpGetTypeFromIpFrame(char *ipFrame);
+extern int icmp_GetTypeFromIpFrame(char *ipFrame, unsigned short destPort);
 
 #endif

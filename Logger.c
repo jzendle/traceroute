@@ -12,7 +12,7 @@ void logit(FILE *fp, const char *format, va_list ap) {
     vfprintf(fp, format, ap);
 }
 
-void info(const char *msg) {
+void log_info(const char *msg) {
     char time[256];
     char buf [1024];
     timeToString(time, sizeof time);
@@ -20,7 +20,7 @@ void info(const char *msg) {
     fprintf(stdout, "%s", buf);
 }
 
-void infov(const char *format, ...) {
+void log_infov(const char *format, ...) {
     char time[256];
     timeToString(time, sizeof time);
     char buf[1024];
@@ -32,7 +32,7 @@ void infov(const char *format, ...) {
 
 }
 
-void err(int bail, const char *msg) {
+void log_err(int bail, const char *msg) {
     char time[256];
     char buf [1024];
     timeToString(time, sizeof time);
@@ -42,7 +42,7 @@ void err(int bail, const char *msg) {
 
 }
 
-void errv(int bail, const char *format, ...) {
+void log_errv(int bail, const char *format, ...) {
     char time[256];
     timeToString(time, sizeof time);
     char buf[1024];

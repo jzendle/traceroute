@@ -35,14 +35,14 @@ int makeProto(Protocol prot) {
   case STREAM:
     return SOCK_STREAM;
   default:
-    errv(0, "unknown protocol %d\n", prot);
+    log_errv(0, "unknown protocol %d\n", prot);
     return 0;
   }
 }
 
 /* public functions */
 
-int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
+int socket_Create(Socket **ps, const char *host, int port, Protocol protocol) {
   int fd;
   struct sockaddr_in adr_inet;
   int adr_len;
@@ -53,13 +53,13 @@ int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
   fd = socket(PF_INET, prot, protocol == RAW ? IPPROTO_ICMP : 0);
 
   if (fd == -1) {
-    PERROR;
+    LOG_PERROR;
     return EXIT_FAILURE;
   }
 
   Socket *newSocket = calloc(1, sizeof (Socket));
   if (newSocket == NULL) {
-    PERROR;
+LOG_PERROR;
     return EXIT_FAILURE;
   }
 
@@ -78,7 +78,7 @@ int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
     adr_inet.sin_addr.s_addr = ntohl(INADDR_ANY);
   else {
     if (inet_aton(host, &adr_inet.sin_addr) == 0) {
-      PERROR;
+        LOG_PERROR;
       return EXIT_FAILURE;
     }
 
@@ -88,7 +88,7 @@ int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
   if (bind(fd,
 	   (struct sockaddr *) &adr_inet,
 	   adr_len) == -1) {
-    PERROR;
+    LOG_PERROR;
     return EXIT_FAILURE;
   }
 
@@ -96,20 +96,20 @@ int socketCreate(Socket **ps, const char *host, int port, Protocol protocol) {
 
 }
 
-int socketListen(Socket *ps, int backlog) {
+int socket_Listen(Socket *ps, int backlog) {
   return listen(ps->socket, backlog);
 }
 
-int socketSetTTL(Socket *ps, int ttl) {
+int socket_SetTTL(Socket *ps, int ttl) {
   if (setsockopt(ps->socket, IPPROTO_IP, IP_TTL, &ttl, sizeof (int)) != EXIT_SUCCESS) {
-    PERROR;
+    LOG_PERROR;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
 
 
-int socketSetRecordRoute(Socket *ps) {
+int socket_SetRecordRoute(Socket *ps) {
   #define NUM_ROUTES 9
   char routeSpace[3+4* NUM_ROUTES +1];
   int ret = EXIT_SUCCESS;
@@ -121,42 +121,42 @@ int socketSetRecordRoute(Socket *ps) {
   routeSpace[1+IPOPT_OFFSET] = IPOPT_MINOFF;
   
   if (setsockopt(ps->socket, IPPROTO_IP, IP_OPTIONS, routeSpace, sizeof(routeSpace))<0) {
-    PERROR;
+    LOG_PERROR;
     ret = EXIT_FAILURE;
   }
 
   return ret;
 }
 
-int socketGetRecordRoute(Socket *ps, char *options, int *pLen) {
+int socket_GetRecordRoute(Socket *ps, char *options, int *pLen) {
  
   int ret = EXIT_SUCCESS;
   if (getsockopt(ps->socket, IPPROTO_IP, IPOPT_RR, options, (socklen_t *)pLen)<0) {
-    PERROR;
+    LOG_PERROR;
     ret = EXIT_FAILURE;
   }
 
   return ret;
 }
 
-int socketSetTimeout(Socket *ps, int seconds) {
+int socket_SetTimeout(Socket *ps, int seconds) {
   struct timeval tv;
 
   tv.tv_sec = seconds;
   tv.tv_usec = 0;
 
   if (setsockopt(ps->socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &tv, sizeof (struct timeval)) != EXIT_SUCCESS) {
-    PERROR;
+    LOG_PERROR;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
 
-int socketSendTo(Socket *ps, const struct sockaddr_in *sendTo, const char *data, int dataLen) {
+int socket_SendTo(Socket *ps, const struct sockaddr_in *sendTo, const char *data, int dataLen) {
 
   if (sendto(ps->socket, data, dataLen, 0, (const struct sockaddr *) sendTo, 
 	     sizeof (struct sockaddr_in)) != dataLen) {
-    PERROR;
+    LOG_PERROR;
     return EXIT_FAILURE;
 
   }
@@ -168,7 +168,7 @@ int socketSendTo(Socket *ps, const struct sockaddr_in *sendTo, const char *data,
 
 }
 
-int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen) {
+int socket_RecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen) {
 
   struct sockaddr_in from_addr;
   int numRead;
@@ -177,7 +177,7 @@ int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen
   socklen_t recvLen = sizeof from_addr;
   if ((numRead = recvfrom(ps->socket, data, *dataLen, 0, (struct sockaddr *) &from_addr, &recvLen)) < 0) {
     if (errno != 11) /* Resource temporarily unavailable - timeout */
-      PERROR;
+      LOG_PERROR;
     return EXIT_FAILURE;
 
   }
@@ -191,9 +191,9 @@ int socketRecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen
 
 }
 
-int socketRelease(Socket *ps) {
-  if (close(ps->socket) != 0) {
-    PERROR;
+int socket_Release(Socket *ps) {
+    if (close(ps->socket) != 0) {
+    LOG_PERROR;
   }
   free(ps);
   return EXIT_SUCCESS;
