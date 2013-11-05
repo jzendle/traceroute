@@ -36,7 +36,7 @@ extern int socket_GetRecordRoute(Socket *ps, char *options, int *pLen);
 extern int socket_SendTo(Socket *ps, const struct sockaddr_in *sendTo, const char *data, int dataLen);
 
 /* null host implies INET_ADDR_ANY for a server address */
-extern int socket_RecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen);
+extern int socket_RecvFrom(Socket *ps, struct sockaddr_in *recvFrom, char *data, int *dataLen);
 
 extern int socket_Release(Socket *ps);
 

@@ -168,21 +168,21 @@ int socket_SendTo(Socket *ps, const struct sockaddr_in *sendTo, const char *data
 
 }
 
-int socket_RecvFrom(Socket *ps, char *server, int *port, char *data, int *dataLen) {
+int socket_RecvFrom(Socket *ps, struct sockaddr_in *from_addr, char *data, int *dataLen) {
 
-  struct sockaddr_in from_addr;
-  int numRead;
-  memset(&from_addr, 0, sizeof from_addr);
 
-  socklen_t recvLen = sizeof from_addr;
-  if ((numRead = recvfrom(ps->socket, data, *dataLen, 0, (struct sockaddr *) &from_addr, &recvLen)) < 0) {
-    if (errno != 11) /* Resource temporarily unavailable - timeout */
+    int numRead;
+  socklen_t recvLen = sizeof (struct sockaddr_in);
+  if ((numRead = recvfrom(ps->socket, data, *dataLen, 0, (struct sockaddr *) from_addr, &recvLen)) < 0) { 
+  /* if ((numRead = recvfrom(ps->socket, data, *dataLen, 0, (struct sockaddr *) 0, &recvLen)) < 0) { */
+    if (errno != 11) /* Resource temporarily unavailable - timeout - we will call these sucessful */
       LOG_PERROR;
+     
     return EXIT_FAILURE;
 
   }
 
-  strcpy(server, inet_ntoa(from_addr.sin_addr));
+ 
   *dataLen = numRead;
   /* update internal counter */
   ps->bytesIn += numRead;

@@ -46,15 +46,15 @@
       <runprofile version="9">
         <runcommandpicklist>
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"/traceroute</runcommandpicklistitem>
           <runcommandpicklistitem>traceroute</runcommandpicklistitem>
           <runcommandpicklistitem>traceroute 192.168.0.</runcommandpicklistitem>
           <runcommandpicklistitem>traceroute 192.168.0.102</runcommandpicklistitem>
           <runcommandpicklistitem>./traceroute 192.168.0.102</runcommandpicklistitem>
           <runcommandpicklistitem> ./traceroute 192.168.0.102</runcommandpicklistitem>
           <runcommandpicklistitem>sudo ./traceroute 192.168.0.102</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"/traceroute</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>sudo ./traceroute 192.168.0.102</runcommand>
+        <runcommand>"${OUTPUT_PATH}"/traceroute</runcommand>
         <rundir>.</rundir>
         <buildfirst>false</buildfirst>
         <terminal-type>0</terminal-type>
