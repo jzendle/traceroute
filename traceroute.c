@@ -29,26 +29,31 @@ int perform_traceroute(const char * address) {
     struct hostent *hp = NULL;
     struct sockaddr_in addr_srv;
 
-
     int unreachablePort = 65433;
-    const char *msg = "message in a bottle";
+    char resolvedAddress[512];
+    const char *msg = "message in a bottle"; /* sending this out */
 
     /* build the target address */
     memset(&addr_srv, 0, sizeof addr_srv);
     addr_srv.sin_port = ntohs(unreachablePort);
     addr_srv.sin_family = AF_INET;
 
+    /* assume user passed in dotted decimal notation */
+    strncpy(resolvedAddress, address, sizeof resolvedAddress);
+    
     hp = gethostbyname(address);
-    if (hp == NULL) { /* didn't find in dns */
+    if (!hp) { /* didn't find in dns so assume address is in dotted decimal format */
         log_errv(0, "coudn't find (%s) in dns\n", address);
         if (inet_aton(address, (struct in_addr *) &addr_srv.sin_addr) == 0) {
+            /* exit */
             log_errv(1, "unable to resolve address (%s)\n", address);
         }
     } else { /* found in dns, use first element of address of list */
         memcpy(&addr_srv.sin_addr, hp->h_addr_list[0], 4);
+        strncpy(resolvedAddress, inet_ntoa(addr_srv.sin_addr), sizeof resolvedAddress);
     }
 
-    printf("tracing route to %s (%s)\n", address, (hp == NULL ? address : hp->h_name));
+    printf("tracing route to %s (%s)\n", address, resolvedAddress);
 
     if (socket_Create(&icmp, 0, 0, RAW) != EXIT_SUCCESS) {
         log_errv(1, "unable to create raw socket for %s\n", address);
@@ -90,7 +95,7 @@ int perform_traceroute(const char * address) {
 int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int count, const struct sockaddr_in *sendTo, const char *msg) {
 
     char packet[4096];
-    int printedServer = 0;
+    int printedServer = 0; /* one-shot */
     int icmpMsgType = -1;
 
 
@@ -105,10 +110,9 @@ int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int count, const struct
         gettimeofday(&before, 0);
 
         if (socket_SendTo(send, sendTo, msg, strlen(msg)) != EXIT_SUCCESS) {
-            /* char server[1024];
-               inet_ntoa(server,&sendTo->sin_addr); */
-            log_errv(0, "can't send to server %s\n", inet_ntoa(sendTo->sin_addr));
-            return EXIT_FAILURE;
+            /* must be bad address - exit */
+            log_errv(1, "can't send to server %s\n", inet_ntoa(sendTo->sin_addr));
+            return EXIT_FAILURE; /* unreachable */
         }
 
         int len = sizeof packet;
