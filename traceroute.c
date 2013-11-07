@@ -4,6 +4,7 @@
 #include "Logger.h"
 #include "Icmp.h"
 #include "Timer.h"
+#include "InetDb.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,7 +16,7 @@
 
 /* forward decl */
 
-extern int inet_aton(__const char *__cp, struct in_addr *__inp);
+int inet_aton(const char *__cp, struct in_addr *__inp); /* gives warning otherwise !? clearly in inet.h */
 
 int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int nTimes, const struct sockaddr_in *sendTo, const char *msg);
 
@@ -26,7 +27,6 @@ int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int nTimes, const struc
 int perform_traceroute(const char * address) {
     Socket *udp;
     Socket *icmp;
-    struct hostent *hp = NULL;
     struct sockaddr_in addr_srv;
 
     int unreachablePort = 65433;
@@ -38,21 +38,11 @@ int perform_traceroute(const char * address) {
     addr_srv.sin_port = ntohs(unreachablePort);
     addr_srv.sin_family = AF_INET;
 
-    /* assume user passed in dotted decimal notation */
-    strncpy(resolvedAddress, address, sizeof resolvedAddress);
-    
-    hp = gethostbyname(address);
-    if (!hp) { /* didn't find in dns so assume address is in dotted decimal format */
-        log_errv(0, "coudn't find (%s) in dns\n", address);
-        if (inet_aton(address, (struct in_addr *) &addr_srv.sin_addr) == 0) {
-            /* exit */
-            log_errv(1, "unable to resolve address (%s)\n", address);
-        }
-    } else { /* found in dns, use first element of address of list */
-        memcpy(&addr_srv.sin_addr, hp->h_addr_list[0], 4);
-        strncpy(resolvedAddress, inet_ntoa(addr_srv.sin_addr), sizeof resolvedAddress);
+    /* fill in addr_srv.sin_addr */
+    if ( inetDb_ResolveAddress(address, &addr_srv.sin_addr ,resolvedAddress,sizeof resolvedAddress) != EXIT_SUCCESS) {
+        log_err(1, "exiting.\n");
     }
-
+   
     printf("tracing route to %s (%s)\n", address, resolvedAddress);
 
     if (socket_Create(&icmp, 0, 0, RAW) != EXIT_SUCCESS) {
@@ -82,11 +72,9 @@ int perform_traceroute(const char * address) {
 
         /* flush stdout */
         printf("\n");
-        /* if (msgType == EXIT_FAILURE) {
-            log_errv(1, "error in socketSendRecvNTimesFrom. Exiting.\n");
-        } */
 
     }
+    
     socket_Release(icmp);
     socket_Release(udp);
     return EXIT_SUCCESS;
@@ -122,10 +110,11 @@ int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int count, const struct
             float timeMs = timeDiffMillis(&after, &before);
 
             if (!printedServer) {
-                char server [1024];
-                 strncpy(server, inet_ntoa(recvFrom.sin_addr), sizeof server);
-                struct hostent *hp = gethostbyaddr(&recvFrom.sin_addr,sizeof recvFrom.sin_addr, recvFrom.sin_family);
-                printf(" %s (%s) ", server, hp == NULL ? server : hp->h_name);
+                char unresolved [1024];
+                char resolved [1024];
+                
+                inetDb_GetHostForAddress(&recvFrom, unresolved, sizeof unresolved, resolved, sizeof resolved);
+                printf(" %s (%s) ", unresolved, resolved);
                 printedServer = !printedServer;
             }
             printf(" %4.3fms ", timeMs);

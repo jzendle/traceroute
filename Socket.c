@@ -16,7 +16,7 @@
 extern const char *hstrerror(int err);
 
 
-extern int inet_aton(const char *__cp, struct in_addr *__inp);
+int inet_aton(const char *__cp, struct in_addr *__inp);
 
 struct SocketStruct {
   int socket;
@@ -77,7 +77,7 @@ LOG_PERROR;
   if (host == NULL)
     adr_inet.sin_addr.s_addr = ntohl(INADDR_ANY);
   else {
-    if (inet_aton(host, &adr_inet.sin_addr) == 0) {
+    if (inet_aton(host, (struct in_addr *)&adr_inet.sin_addr) == 0) {
         LOG_PERROR;
       return EXIT_FAILURE;
     }
