@@ -8,15 +8,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <netdb.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 
 /* forward decl */
-
-int inet_aton(const char *__cp, struct in_addr *__inp); /* gives warning otherwise !? clearly in inet.h */
 
 int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int nTimes, const struct sockaddr_in *sendTo, const char *msg);
 
@@ -62,7 +57,7 @@ int perform_traceroute(const char * address) {
 
     int msgType = 0;
     int ttl = 0;
-    while (msgType != ICMP_PORT_UNREACH && ttl < 64) {
+    while (msgType != ICMP_PORT_UNREACH && ttl < 32) {
 
         socket_SetTTL(udp, ++ttl);
 
@@ -114,6 +109,7 @@ int socketSendRecvNTimesFrom(Socket *send, Socket *recv, int count, const struct
                 char resolved [1024];
                 
                 inetDb_GetHostForAddress(&recvFrom, unresolved, sizeof unresolved, resolved, sizeof resolved);
+                
                 printf(" %s (%s) ", unresolved, resolved);
                 printedServer = !printedServer;
             }

@@ -45,10 +45,9 @@ int inetDb_GetHostForAddress(const struct sockaddr_in *addr,
         char *unresolvedName, int unresolvedLen,
         char *resolvedName, int resolvedLen) {
 
-    char address [1024];
     strncpy(unresolvedName, inet_ntoa(addr->sin_addr), unresolvedLen);
     struct hostent *hp = gethostbyaddr(&addr->sin_addr, sizeof addr->sin_addr, addr->sin_family);
-    strncpy(resolvedName, hp == NULL ? address : hp->h_name, resolvedLen);
+    strncpy(resolvedName, hp == NULL ? unresolvedName : hp->h_name, resolvedLen);
 
     return EXIT_SUCCESS;
 
