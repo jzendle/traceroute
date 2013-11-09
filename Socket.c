@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-extern const char *hstrerror(int err);
+const char *hstrerror(int err);
 
 
 int inet_aton(const char *__cp, struct in_addr *__inp);
