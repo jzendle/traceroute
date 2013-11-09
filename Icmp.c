@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-extern int icmp_GetTypeFromIpFrame(char *ipFrame, unsigned short destPort) {
+int icmp_GetTypeFromIpFrame(char *ipFrame, unsigned short destPort) {
 
     struct iphdr *iphdr = (struct iphdr *) ipFrame;
     struct icmphdr *icmp = NULL;
