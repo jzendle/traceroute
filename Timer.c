@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <string.h>
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
+int snprintf(char *str, size_t size, const char *format, ...);
 
 char *timeToString(char *buffer, int len) {
 
